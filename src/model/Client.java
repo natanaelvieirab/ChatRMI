@@ -1,28 +1,22 @@
 package model;
 
-public class Client {
-	
-	private String IP;
-	
-	private String port;
-	
+import java.io.Serializable;
+import java.util.LinkedList;
+import java.util.List;
+
+public class Client implements Serializable{
+		
+	private static final long serialVersionUID = 1L;
+
 	private String username;
+	
+	private List<InfoMessage> historicMessages ;
 
-	public String getIP() {
-		return IP;
+	public Client(String username) {
+		this.username = username;
+		this.historicMessages  = new LinkedList<InfoMessage>();
 	}
-
-	public void setIP(String iP) {
-		IP = iP;
-	}
-
-	public String getPort() {
-		return port;
-	}
-
-	public void setPort(String port) {
-		this.port = port;
-	}
+	
 
 	public String getUsername() {
 		return username;
@@ -32,6 +26,14 @@ public class Client {
 		this.username = username;
 	}
 	
+	
+	public void addMessageToHistoric(InfoMessage message) {
+		historicMessages.add(message);
+	}
+	
+	public List<InfoMessage> getHistoricMessages(){
+		return historicMessages;
+	}
 	
 	
 

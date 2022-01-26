@@ -1,38 +1,39 @@
 package controller;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.net.Socket;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.util.List;
 
 import model.Client;
+import model.InfoMessage;
+import rmi.ChatServer;
+import utils.RMIConfiguration;
 
 public class ClientController {
 
 	private Client infoClient;
+	private ChatServer server;
 	
-	private Socket socket;
-	private OutputStream ou ;
-	private Writer ouw;
-	private BufferedWriter bfw;	
 	
-	public void createConnection(Client infoClient)  {
-		try {
-			this.infoClient = infoClient;
+	public ClientController(String username) {
+		this.infoClient  = new Client(username);		
+		
+		createConnection();
+	}
+	
+	
+	private void createConnection()  {
+		try {			
 			
-			socket = new Socket(infoClient.getIP(),Integer.parseInt(infoClient.getPort()));
-			ou = socket.getOutputStream();
-			ouw = new OutputStreamWriter(ou);
-			bfw = new BufferedWriter(ouw);
-		  
-			bfw.write(infoClient.getUsername()+"\r\n");
-		  
-			bfw.flush();
-		} catch (NumberFormatException | IOException e) {			
-			e.printStackTrace();
-		}
+			this.server = (ChatServer) Naming.lookup(RMIConfiguration.getUrl());
+			
+		}catch(MalformedURLException ex) {
+			System.out.println("Servidor não encontrado! \nError: "+ex.getMessage());			
+		}catch (NotBoundException | RemoteException ex) {
+			ex.printStackTrace();			
+		} 
 		  
 	}
 	
@@ -41,27 +42,46 @@ public class ClientController {
         try {
         	sendMessage("Desconectado \r\n");
         	
-			bfw.close();
-			ouw.close();
-	        ou.close();
 	        
-	        socket.close();
-	        
-		} catch (IOException ex) {
+		} catch (Exception ex) {
 			
 			ex.printStackTrace();
 		}
         
 	}
 	
+	public boolean connectChat() {
+		try {
+			server.addClientes(infoClient);
+			
+			return true;
+		}catch (Exception ex) {
+			System.out.println("Houve um erro durante o cadastro do usuário ao chat!");
+			ex.printStackTrace();
+			
+			return false;
+		}
+	}
+	
 	public void sendMessage(String msg) {
 		try {
-			bfw.write(msg+"\r\n");
-			bfw.flush();
+			if(msg.length() == 0)
+				return;
+			
+			server.sendMessage(msg, infoClient.getUsername());		
 			
 		}catch (Exception ex) {
+			System.out.println("Houve um erro durante o envio da mensagem!");
 			ex.printStackTrace();
 		}
+	}
+	
+	public List<InfoMessage> getHistoricMessages(){
+		return infoClient.getHistoricMessages();
+	}
+	
+	public String getUsername(){
+		return infoClient.getUsername();
 	}
 
 }

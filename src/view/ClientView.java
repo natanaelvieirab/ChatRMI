@@ -21,22 +21,17 @@ public class ClientView extends JFrame implements ActionListener, KeyListener{
 	private JLabel historicMsgJL;
 	private JLabel messageJL;
 	private JPanel contentPainel;
-	
-	private JTextField ipTField;
-	private JTextField portTField;
+
 	private JTextField usernameTField;
 	
 	private ClientController clientController ;
 	
-	public ClientView() throws IOException{
-		clientController = new ClientController();
-	}
-	
 	public void start() {
-		Client info =  infoClient();
+		String username =  infoClient();
 		
 		try {
-			clientController.createConnection(info);	
+			this.clientController = new ClientController(username);
+			clientController.connectChat();
 			loadScreen();
 		}
 		catch(Exception ex) {
@@ -44,24 +39,16 @@ public class ClientView extends JFrame implements ActionListener, KeyListener{
 		}
 	}
 	
-	private Client infoClient() {
-		JLabel lblMessage = new JLabel("Informe os seguintes dados:");
+	private String infoClient() {
+		JLabel lblMessage = new JLabel("Informe o seu nome:");
 		
-	    ipTField = new JTextField("127.0.0.1");
-	    portTField = new JTextField("12345");
 	    usernameTField = new JTextField("Cliente");
 	    
-	    Object[] texts = {lblMessage, ipTField, portTField, usernameTField };	    
+	    Object[] texts = {lblMessage, usernameTField };	    
 	    
 	    JOptionPane.showMessageDialog(null, texts);
-	    
-	    Client infoClient = new Client();
-	    
-	    infoClient.setIP(ipTField.getText());
-	    infoClient.setPort(portTField.getText());
-	    infoClient.setUsername(usernameTField.getText());
-	    
-	    return infoClient;
+	   	    
+	    return usernameTField.getText();
 	}
 	
 	
