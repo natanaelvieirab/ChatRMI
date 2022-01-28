@@ -1,20 +1,37 @@
 package model;
 
 import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.util.LinkedList;
 import java.util.List;
 
+import rmi.ChatServer;
+import utils.RMIConfiguration;
+
 public class Client implements Serializable{
 		
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 987987654654213L;
 
-	private String username;
-	
-	private List<InfoMessage> historicMessages ;
+	private String username;	
+	private List<InfoMessage> historicMessages ;	
+	private ChatServer server;
 
 	public Client(String username) {
 		this.username = username;
 		this.historicMessages  = new LinkedList<InfoMessage>();
+		
+		try {
+			
+			server = (ChatServer) Naming.lookup(RMIConfiguration.getUrl());
+			
+		}catch(MalformedURLException ex) {
+			System.out.println("Servidor não encontrado! \nError: "+ex.getMessage());			
+		}catch (NotBoundException | RemoteException ex) {
+			ex.printStackTrace();			
+		} 
 	}
 	
 
@@ -24,17 +41,62 @@ public class Client implements Serializable{
 
 	public void setUsername(String username) {
 		this.username = username;
-	}
-	
+	}	
 	
 	public void addMessageToHistoric(InfoMessage message) {
 		historicMessages.add(message);
+		historicMessages.forEach(h -> System.out.println(h.getSenderUsername() + ": " + h.getText()));
 	}
 	
 	public List<InfoMessage> getHistoricMessages(){
+		if(historicMessages.isEmpty()) {
+			List<InfoMessage> test = new LinkedList<InfoMessage>();
+			test.add(new InfoMessage("text", "username"));
+			return test;
+		}
 		return historicMessages;
 	}
 	
+	public boolean connectChat() {
+		try {
+			server.addClient(this);	
+						
+			System.out.println("Usuário '"+username+"' entrou...");
+			
+			return true;
+		}catch (Exception ex) {
+			System.out.println("Houve um erro durante o cadastro do usuário ao chat!");
+			ex.printStackTrace();
+			
+			return false;
+		}
+	}
+	
+	public void sendMessage(String msg) {
+		try {
+			if(msg.length() == 0)
+				return;
+			
+			server.sendMessage(msg, username);
+			
+			for(InfoMessage info : historicMessages)
+				System.out.println(info.toString());
+			
+		}catch (Exception ex) {
+			System.out.println("Houve um erro durante o envio da mensagem!");
+			ex.printStackTrace();
+		}
+	}
+	
+	public void exitChat() {
+		try {
+        	server.exitChat(username);        	
+	        
+		} catch (Exception ex) {
+			
+			ex.printStackTrace();
+		}
+	}
 	
 
 }

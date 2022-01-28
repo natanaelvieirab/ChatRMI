@@ -1,5 +1,6 @@
 package app;
 
+import java.awt.EventQueue;
 import java.io.IOException;
 
 import view.ClientView;
@@ -7,9 +8,18 @@ import view.ClientView;
 public class ClientApp {
 
 	public static void main(String[] args) throws IOException {
-		ClientView clientView = new ClientView();
 		
-		clientView.start();
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					ClientView clientView = new ClientView();
+					
+					clientView.start();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
 
 	}
 

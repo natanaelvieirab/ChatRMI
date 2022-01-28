@@ -6,11 +6,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
+import java.sql.Date;
 
 import javax.swing.*;
 
-import controller.ClientController;
 import model.Client;
+import model.InfoMessage;
 
 public class ClientView extends JFrame implements ActionListener, KeyListener{
 	
@@ -24,15 +25,20 @@ public class ClientView extends JFrame implements ActionListener, KeyListener{
 
 	private JTextField usernameTField;
 	
-	private ClientController clientController ;
+	private Client client ;
 	
 	public void start() {
 		String username =  infoClient();
 		
 		try {
-			this.clientController = new ClientController(username);
-			clientController.connectChat();
-			loadScreen();
+			this.client = new Client(username);
+			
+			if(this.client.connectChat())
+				loadScreen();
+			else 
+				System.out.println("Erro ao se conectar ao chat!");
+			System.out.println(client);
+				
 		}
 		catch(Exception ex) {
 			System.out.println("Aconteceu o seguinte erro: \n"+ex.getMessage());
@@ -98,7 +104,7 @@ public class ClientView extends JFrame implements ActionListener, KeyListener{
 	@Override
 	public void keyPressed(KeyEvent e) {
 		if(e.getKeyCode() == KeyEvent.VK_ENTER){
-	           clientController.sendMessage(messageTField.getText());
+				sendMessage();
 	       }
 		
 	}
@@ -107,19 +113,32 @@ public class ClientView extends JFrame implements ActionListener, KeyListener{
 	public void actionPerformed(ActionEvent e) {
 		try {
 			if(e.getActionCommand().equals(btnSend.getActionCommand())) {
-				clientController.sendMessage(messageTField.getText());
-				screenOutputJT.append(messageTField.getText());
-				
+				sendMessage();
 				return;
 			}				
 			
 			if(e.getActionCommand().equals(btnExit.getActionCommand())) {
-				clientController.exit();
-				screenOutputJT.append("Desconectado \r\n");
+				client.exitChat();
+				
+				screenOutputJT.append("\n Desconectado \r\n");
+				System.exit(0);
 			}					
 		}catch(Exception ex) {
 			ex.printStackTrace();
 		}
+		
+	}
+	
+	private void sendMessage() {
+		this.client.sendMessage(messageTField.getText());
+		
+		String details = "#("+client.getUsername()+") diz: "+messageTField.getText(); 
+		
+		client.getHistoricMessages().forEach(infoMsg -> {
+			System.out.println(infoMsg.toString());
+		});
+		
+		screenOutputJT.append(details);				
 		
 	}
 

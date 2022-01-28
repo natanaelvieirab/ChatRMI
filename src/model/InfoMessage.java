@@ -1,15 +1,24 @@
 package model;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 public class InfoMessage {
 
 	private String text;
 	
 	private String senderUsername;
+	
+	private LocalDate sendDate;
+	
+	private LocalTime sendTime;
 
 	public InfoMessage(String text, String senderUsername) {
 		super();
 		this.text = text;
 		this.senderUsername = senderUsername;
+		this.sendDate = LocalDate.now();
+		this.sendTime = LocalTime.now();
 	}
 
 	public String getText() {
@@ -28,11 +37,26 @@ public class InfoMessage {
 		this.senderUsername = senderUsername;
 	}
 
-	@Override
-	public String toString() {
-		return ">> "+senderUsername.toUpperCase() + " diz: "+text;
+	public LocalDate getSendDate() {
+		return sendDate;
 	}
-	
-	
-	
+
+	public void setSendDate(LocalDate sendDate) {
+		this.sendDate = sendDate;
+	}
+
+	public LocalTime getSendTime() {
+		return sendTime;
+	}
+
+	public void setSendTime(LocalTime sendTime) {
+		this.sendTime = sendTime;
+	}
+
+	public String toString() {
+		if(text.contains("Desconectado"))
+			return "--> "+senderUsername+" saiu do chat ! ("+sendDate+": "+sendTime+") <--";
+		
+		return ">> ("+sendDate+": "+sendTime+") "+senderUsername+" diz: "+text;
+	}
 }
