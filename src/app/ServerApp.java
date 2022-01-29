@@ -11,19 +11,20 @@ import java.util.Map;
 
 import model.Client;
 import model.InfoMessage;
-import rmi.ChatServer;
+import rmi.ServerInterface;
+import rmi.ClientInterface;
 import utils.RMIConfiguration;
 
-public class ChatServerApp extends UnicastRemoteObject implements ChatServer{
+public class ServerApp extends UnicastRemoteObject implements ServerInterface{
 
-	private Map<String, Client> clients ;
+	private Map<String, ClientInterface> clients ;
 	private List<InfoMessage> historicMessages;
 
 	private static final long serialVersionUID = 21321321321321321L;
 
-	protected ChatServerApp() throws RemoteException {
+	protected ServerApp() throws RemoteException {
 		super();
-		clients = new HashMap<String, Client>();
+		clients = new HashMap<String, ClientInterface>();
 		historicMessages = new LinkedList<InfoMessage>();
 		
 		init();
@@ -31,7 +32,7 @@ public class ChatServerApp extends UnicastRemoteObject implements ChatServer{
 
 	public static void main(String[] args) {
 		try {
-			ChatServer chat = new ChatServerApp();			
+			ServerInterface chat = new ServerApp();			
 		}
 		catch(RemoteException e) {
 			System.out.println("Ocorreu o seguinte erro:");
@@ -54,13 +55,12 @@ public class ChatServerApp extends UnicastRemoteObject implements ChatServer{
 
 
 	@Override
-	public boolean addClient( Client client) throws RemoteException {
+	public boolean addClient( ClientInterface client) throws RemoteException {
 		if(!isRegistered(client.getUsername())) {
 			
 			clients.put(client.getUsername(), client);
 
-			System.out.println(client.getUsername()+" foi adicionado ao chat!");
-			System.out.println(client);
+			System.out.println(client.getUsername()+" foi adicionado ao chat!");			
 			
 			return true;
 		}
@@ -73,15 +73,22 @@ public class ChatServerApp extends UnicastRemoteObject implements ChatServer{
 			InfoMessage msg = new InfoMessage(message, senderUsername);
 			historicMessages.add(msg);
 			
-			clients.values().forEach(client -> client.addMessageToHistoric(msg));
+			clients.values().forEach(client -> {
+				try {
+					client.addMessageToHistoric(msg);
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			});
 			
 			System.out.println("Lista de clientes cadastrado:");			
-			for(Client c : clients.values()) {
+			for(ClientInterface c : clients.values()) {
 				System.out.println(c.getUsername());
 				
-				c.getHistoricMessages().forEach(h -> {
-					System.out.println(h.toString());
-				});				
+//				c.getHistoricMessages().forEach(h -> {
+//					System.out.println(h.toString());
+//				});				
 			}				
 				
 			return true;
@@ -101,7 +108,14 @@ public class ChatServerApp extends UnicastRemoteObject implements ChatServer{
 		
 		historicMessages.add(msg);
 		
-		clients.values().forEach(client -> client.addMessageToHistoric(msg));
+		clients.values().forEach(client -> {
+			try {
+				client.addMessageToHistoric(msg);
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		});
 		
 	}
 }

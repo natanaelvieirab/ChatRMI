@@ -5,27 +5,30 @@ import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.LinkedList;
 import java.util.List;
 
-import rmi.ChatServer;
+import rmi.ServerInterface;
+import rmi.ClientInterface;
 import utils.RMIConfiguration;
 
-public class Client implements Serializable{
-		
-	private static final long serialVersionUID = 987987654654213L;
+public class Client extends UnicastRemoteObject implements ClientInterface{
 
+	
+	private static final long serialVersionUID = -4683827120430115498L;
+	
 	private String username;	
 	private List<InfoMessage> historicMessages ;	
-	private ChatServer server;
+	private transient ServerInterface server;
 
-	public Client(String username) {
+	public Client(String username) throws RemoteException {
 		this.username = username;
 		this.historicMessages  = new LinkedList<InfoMessage>();
 		
 		try {
 			
-			server = (ChatServer) Naming.lookup(RMIConfiguration.getUrl());
+			server = (ServerInterface) Naming.lookup(RMIConfiguration.getUrl());
 			
 		}catch(MalformedURLException ex) {
 			System.out.println("Servidor não encontrado! \nError: "+ex.getMessage());			

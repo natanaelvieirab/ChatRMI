@@ -36,8 +36,7 @@ public class ClientView extends JFrame implements ActionListener, KeyListener{
 			if(this.client.connectChat())
 				loadScreen();
 			else 
-				System.out.println("Erro ao se conectar ao chat!");
-			System.out.println(client);
+				System.out.println("Erro ao se conectar ao chat!");			
 				
 		}
 		catch(Exception ex) {
