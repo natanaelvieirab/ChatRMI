@@ -5,8 +5,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.io.IOException;
-import java.sql.Date;
+import java.util.TimerTask;
+import java.util.Timer;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 
 import javax.swing.*;
 
@@ -22,7 +24,10 @@ public class ClientView extends JFrame implements ActionListener, KeyListener{
 	private JLabel historicMsgJL;
 	private JLabel messageJL;
 	private JPanel contentPainel;
-
+	
+	private final int PAINEL_WIDTH = 400;
+	private final int PAINEL_HEIGHT = 450;
+			 
 	private JTextField usernameTField;
 	
 	private Client client ;
@@ -36,7 +41,20 @@ public class ClientView extends JFrame implements ActionListener, KeyListener{
 			if(this.client.connectChat())
 				loadScreen();
 			else 
-				System.out.println("Erro ao se conectar ao chat!");			
+				System.out.println("Erro ao se conectar ao chat!");
+			
+			// Criando tarefa para verificar se há mensagen para o cliente
+			Timer time = new Timer();
+			TimerTask task = new TimerTask() {
+				
+				@Override
+				public void run() {
+					showMessages();					
+				}
+			};
+			
+			time.scheduleAtFixedRate(task, 0, 1000);			
+			
 				
 		}
 		catch(Exception ex) {
@@ -53,17 +71,17 @@ public class ClientView extends JFrame implements ActionListener, KeyListener{
 	    
 	    JOptionPane.showMessageDialog(null, texts);
 	   	    
-	    return usernameTField.getText();
+	    return usernameTField.getText(); 
 	}
 	
 	
 	private void loadScreen() {
 		contentPainel = new JPanel();
-	    screenOutputJT = new JTextArea(10,20);
+	    screenOutputJT = new JTextArea(20,30);
 	    screenOutputJT.setEditable(false);
 	    screenOutputJT.setBackground(new Color(240,240,240));
 	    
-	    messageTField = new JTextField(20);
+	    messageTField = new JTextField(30);
 	    historicMsgJL = new JLabel("Histórico");
 	    messageJL = new JLabel("Mensagem");
 	    btnSend = new JButton("Enviar");
@@ -93,7 +111,7 @@ public class ClientView extends JFrame implements ActionListener, KeyListener{
 	    setContentPane(contentPainel);
 	    setLocationRelativeTo(null);
 	    setResizable(false);
-	    setSize(250,300);   
+	    setSize(PAINEL_WIDTH,PAINEL_HEIGHT);   
 	    
 	    setVisible(true);
 	    
@@ -130,15 +148,19 @@ public class ClientView extends JFrame implements ActionListener, KeyListener{
 	
 	private void sendMessage() {
 		this.client.sendMessage(messageTField.getText());
+		messageTField.setText("");
+		showMessages();
+	}
+	
+	private void showMessages() {
 		
-		String details = "#("+client.getUsername()+") diz: "+messageTField.getText(); 
-		
+	
 		client.getHistoricMessages().forEach(infoMsg -> {
-			System.out.println(infoMsg.toString());
+			if(!infoMsg.isWasDisplayed()) {				
+				screenOutputJT.append(infoMsg.show());
+				infoMsg.setWasDisplayed(true);
+			}			
 		});
-		
-		screenOutputJT.append(details);				
-		
 	}
 
 	@Override

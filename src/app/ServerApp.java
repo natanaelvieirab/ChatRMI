@@ -14,6 +14,7 @@ import model.InfoMessage;
 import rmi.ServerInterface;
 import rmi.ClientInterface;
 import utils.RMIConfiguration;
+import utils.StatusConnection;
 
 public class ServerApp extends UnicastRemoteObject implements ServerInterface{
 
@@ -62,6 +63,10 @@ public class ServerApp extends UnicastRemoteObject implements ServerInterface{
 
 			System.out.println(client.getUsername()+" foi adicionado ao chat!");			
 			
+			InfoMessage msg = new InfoMessage(StatusConnection.CONNECTED.toString(), client.getUsername());				
+			
+			updateHistoricMessages(msg);
+			
 			return true;
 		}
 		return false;
@@ -71,25 +76,8 @@ public class ServerApp extends UnicastRemoteObject implements ServerInterface{
 	public boolean sendMessage(String message, String senderUsername) throws RemoteException {
 		if(isRegistered(senderUsername)) {
 			InfoMessage msg = new InfoMessage(message, senderUsername);
-			historicMessages.add(msg);
-			
-			clients.values().forEach(client -> {
-				try {
-					client.addMessageToHistoric(msg);
-				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			});
-			
-			System.out.println("Lista de clientes cadastrado:");			
-			for(ClientInterface c : clients.values()) {
-				System.out.println(c.getUsername());
-				
-//				c.getHistoricMessages().forEach(h -> {
-//					System.out.println(h.toString());
-//				});				
-			}				
+							
+			updateHistoricMessages(msg);		
 				
 			return true;
 		}
@@ -102,20 +90,25 @@ public class ServerApp extends UnicastRemoteObject implements ServerInterface{
 
 	@Override
 	public void exitChat(String username) throws RemoteException {
-		clients.remove(username);
+		clients.remove(username); 
 		
-		InfoMessage msg = new InfoMessage("Desconectado", username);
+		InfoMessage msg = new InfoMessage(StatusConnection.DISCONNECTED.toString(), username);
+					
+		updateHistoricMessages(msg);
+		
+	}
+	
+	private void updateHistoricMessages(InfoMessage msg ) {
 		
 		historicMessages.add(msg);
 		
 		clients.values().forEach(client -> {
 			try {
-				client.addMessageToHistoric(msg);
-			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
+				client.addMessageToHistoric(msg);				
+				
+			} catch (RemoteException e) {				
 				e.printStackTrace();
 			}
 		});
-		
 	}
 }

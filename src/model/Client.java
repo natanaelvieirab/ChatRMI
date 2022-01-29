@@ -1,6 +1,5 @@
 package model;
 
-import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
@@ -34,7 +33,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
 			System.out.println("Servidor não encontrado! \nError: "+ex.getMessage());			
 		}catch (NotBoundException | RemoteException ex) {
 			ex.printStackTrace();			
-		} 
+		}  
 	}
 	
 
@@ -46,7 +45,13 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
 		this.username = username;
 	}	
 	
-	public void addMessageToHistoric(InfoMessage message) {
+
+	public void setHistoricMessages(List<InfoMessage> historicMessages) {
+		this.historicMessages = historicMessages;
+	}
+
+
+	public void addMessageToHistoric(InfoMessage message) throws RemoteException {
 		historicMessages.add(message);
 		historicMessages.forEach(h -> System.out.println(h.getSenderUsername() + ": " + h.getText()));
 	}
@@ -64,7 +69,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
 		try {
 			server.addClient(this);	
 						
-			System.out.println("Usuário '"+username+"' entrou...");
+			System.out.println("Usuário '"+username+"' se conectou ao chat.");
 			
 			return true;
 		}catch (Exception ex) {
@@ -80,10 +85,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
 			if(msg.length() == 0)
 				return;
 			
-			server.sendMessage(msg, username);
-			
-			for(InfoMessage info : historicMessages)
-				System.out.println(info.toString());
+			server.sendMessage(msg, username);			
 			
 		}catch (Exception ex) {
 			System.out.println("Houve um erro durante o envio da mensagem!");
@@ -100,6 +102,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface{
 			ex.printStackTrace();
 		}
 	}
-	
+
+
 
 }

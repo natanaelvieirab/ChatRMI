@@ -2,7 +2,11 @@ package model;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+
+import utils.StatusConnection;
 
 public class InfoMessage implements Serializable {
 
@@ -12,16 +16,17 @@ public class InfoMessage implements Serializable {
 	
 	private String senderUsername;
 	
-	private LocalDate sendDate;
+	private LocalDateTime moment;
 	
-	private LocalTime sendTime;
+	private boolean wasDisplayed;
 
 	public InfoMessage(String text, String senderUsername) {
 		super();
-		this.text = text;
+		
+		this.text = text; 
 		this.senderUsername = senderUsername;
-		this.sendDate = LocalDate.now();
-		this.sendTime = LocalTime.now();
+		this.moment = LocalDateTime.now();	
+		this.wasDisplayed = false;
 	}
 
 	public String getText() {
@@ -34,20 +39,35 @@ public class InfoMessage implements Serializable {
 	}
 
 
-	public LocalDate getSendDate() {
-		return sendDate;
+	public LocalDateTime getSendDate() {
+		return moment;
 	}
-	
-
-	public LocalTime getSendTime() {
-		return sendTime;
-	}
-
-	
-	public String toString() {
-		if(text.contains("Desconectado"))
-			return "--> "+senderUsername+" saiu do chat ! ("+sendDate+": "+sendTime+") <--";
 		
-		return ">> ("+sendDate+": "+sendTime+") "+senderUsername+" diz: "+text;
+	
+	public boolean isWasDisplayed() {
+		return wasDisplayed;
+	}
+	
+	public void setWasDisplayed(boolean value) {
+		this.wasDisplayed = value;
+	}
+	
+	public String show() {
+
+		DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");		
+		
+		String momentFormatter =  timeFormatter.format(moment);
+		String msg ;
+		
+		if(text.equals(StatusConnection.CONNECTED.toString()))
+			msg =  "   --> "+senderUsername+" entrou no chat ! ("+momentFormatter+")  <--\n\n";
+		
+		else if(text.equals(StatusConnection.DISCONNECTED.toString()))
+			msg = "   --> "+senderUsername+" saiu do chat ! ("+momentFormatter+")  <--\n\n";
+		
+		else
+			msg = "> ("+momentFormatter+") "+senderUsername+" diz: "+text+"\n";
+		
+		return msg;
 	}
 }
